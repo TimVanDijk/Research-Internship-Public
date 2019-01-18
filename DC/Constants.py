@@ -1,0 +1,3 @@
+P = 3
+LANES = 5
+DIGITS_PER_LANE = 32

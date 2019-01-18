@@ -1,0 +1,168 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             Program, CODE, READONLY
+    2 00000000                 ENTRY
+    3 00000000                 EXPORT           F3_add
+    4 00000000                 EXPORT           F3_mult
+    5 00000000                 EXPORT           F3_sqr
+    6 00000000         
+    7 00000000         ; c0 = (a1 & b1) | (a0 & ~b0 & ~b1) | (b0 & ~a0 & ~a1)
+    8 00000000         ;  = (a1 & b1) | (a0 & ~(b0 | b1)) | (b0 & ~(a0 | a1))
+    9 00000000         
+   10 00000000         ; c1 = (a0 & b0) | (a1 & ~b0 & ~b1) | (b1 & ~a0 & ~a1)
+   11 00000000         ;  = (a0 & b0) | (a1 & ~(b0 | b1)) | (b1 & ~(a0 | a1))
+   12 00000000 E92D 03F0 
+                       F3_add  PUSH             {r4-r9}
+   13 00000004         
+   14 00000004         ; We start by loading each bit into its own register
+   15 00000004 6803            LDR              r3, [r0]    ; Loads a0 into r3
+   16 00000006 6844            LDR              r4, [r0, #4] 
+                                                            ; Loads a1 into r4 
+                                                            
+   17 00000008 680D            LDR              r5, [r1]    ; Loads b0 into r5
+   18 0000000A 684E            LDR              r6, [r1, #4] ; Loads b1 into r6
+                                                            
+   19 0000000C         
+   20 0000000C         ; Compute the common parts
+   21 0000000C EA45 0706       ORR              r7, r5, r6  ; b0 | b1
+   22 00000010 F087 37FF       EOR              r7, r7, #0xFFFFFFFF 
+                                                            ; ~(b0 | b1)
+   23 00000014         
+   24 00000014 EA43 0804       ORR              r8, r3, r4  ; a0 | a1
+   25 00000018 F088 38FF       EOR              r8, r8, #0xFFFFFFFF 
+                                                            ; ~(a0 | a1)
+   26 0000001C         
+   27 0000001C         ; Compute c0 and c1
+   28 0000001C EA03 0907       AND              r9, r3, r7  ; r9 = a0 & ~(b0 | 
+                                                            b1)
+   29 00000020 EA03 0305       AND              r3, r3, r5  ; r3 = a0 & b0
+   30 00000024 EA05 0508       AND              r5, r5, r8  ; r5 = b0 & ~(a0 | 
+                                                            a1)
+   31 00000028 EA49 0905       ORR              r9, r9, r5  ; r9 = (a0 & ~(b0 |
+                                                             b1)) | (b0 & ~(a0 
+                                                            | a1))
+   32 0000002C EA04 0707       AND              r7, r4, r7  ; r7 = a1 & ~(b0 | 
+                                                            b1)
+   33 00000030 EA43 0307       ORR              r3, r3, r7  ; r3 = (a0 & b0) | 
+                                                            (a1 & ~(b0 | b1))
+   34 00000034 EA06 0808       AND              r8, r6, r8  ; r6 = b1 & ~(a0 | 
+                                                            a1)
+   35 00000038 EA43 0308       ORR              r3, r3, r8  ; r3 = (a0 & b0) | 
+                                                            (a1 & ~(b0 | b1)) |
+                                                             ( b1 & ~(a0 | a1))
+                                                            )
+   36 0000003C EA04 0406       AND              r4, r4, r6  ; r4 = a1 & b1
+   37 00000040 EA44 0409       ORR              r4, r4, r9  ; r4 = (a1 & b1) | 
+                                                            (a0 & ~(b0 | b1)) |
+                                                             (b0 & ~(a0 | a1))
+   38 00000044         
+   39 00000044         ; Write result to memory
+   40 00000044 6014            STR              r4, [r2]
+   41 00000046 6053            STR              r3, [r2, #4]
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   42 00000048         
+   43 00000048 E8BD 03F0       POP              {r4-r9}
+   44 0000004C 4770            bx               lr
+   45 0000004E         
+   46 0000004E         ; c0 = (a0 & b0) | (a1 & b1)
+   47 0000004E         ; c1 = (a0 & b1) | (a1 & b0)
+   48 0000004E B4F0    F3_mult PUSH             {r4-r7}
+   49 00000050         
+   50 00000050         ; We start by loading each bit into its own register
+   51 00000050 6803            LDR              r3, [r0]    ; Loads a0 into r3
+   52 00000052 6844            LDR              r4, [r0, #4] 
+                                                            ; Loads a1 into r4 
+                                                            
+   53 00000054 680D            LDR              r5, [r1]    ; Loads b0 into r5
+   54 00000056 684E            LDR              r6, [r1, #4] ; Loads b1 into r6
+                                                            
+   55 00000058         
+   56 00000058         ; Compute c0 and c1
+   57 00000058 EA03 0705       AND              r7, r3, r5  ; r7 = a0 & b0
+   58 0000005C EA03 0306       AND              r3, r3, r6  ; r3 = a0 & b1
+   59 00000060 EA04 0606       AND              r6, r4, r6  ; r6 = a1 & b1
+   60 00000064 EA04 0505       AND              r5, r4, r5  ; r5 = a1 & b0
+   61 00000068         
+   62 00000068 EA47 0706       ORR              r7, r7, r6  ; (a0 & b0) | (a1 &
+                                                             b1)
+   63 0000006C EA43 0305       ORR              r3, r3, r5  ; (a0 & b1) | (a1 &
+                                                             b0)
+   64 00000070         
+   65 00000070         ; Write result to memory
+   66 00000070 6017            STR              r7, [r2]
+   67 00000072 6053            STR              r3, [r2, #4]
+   68 00000074         
+   69 00000074 BCF0            POP              {r4-r7}
+   70 00000076 4770            bx               lr
+   71 00000078         
+   72 00000078 6802    F3_sqr  LDR              r2, [r0]    ; Loads a0 into r3
+   73 0000007A 6843            LDR              r3, [r0, #4] ; Loads a1 into r4
+                                                            
+   74 0000007C         
+   75 0000007C         ; Compute c0 and c1
+   76 0000007C EA82 0203       EOR              r2, r2, r3  ; r2 = a0 | a1
+   77 00000080 EA83 0403       EOR              r4, r3, r3  ; r3 = 0
+   78 00000084         
+   79 00000084         ; Write result to memory
+   80 00000084 600A            STR              r2, [r1]
+   81 00000086 604C            STR              r4, [r1, #4]
+   82 00000088         
+   83 00000088 4770            bx               lr
+   84 0000008A         
+   85 0000008A                 END
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4 --apcs=interw
+ork --depend=.\objects\f3_operations.d -o.\objects\f3_operations.o -I.\RTE\_Tar
+get_1 -I"D:\Program Files (x86)\Keil\ARM\PACK\ARM\CMSIS\5.3.0\CMSIS\Include" -I
+"D:\Program Files (x86)\Keil\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM4\Include
+" --predefine="__EVAL SETA 1" --predefine="__UVISION_VERSION SETA 525" --predef
+ine="_RTE_ SETA 1" --predefine="ARMCM4 SETA 1" --list=.\listings\f3_operations.
+lst F3_operations.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+F3_add 00000000
+
+Symbol: F3_add
+   Definitions
+      At line 12 in file F3_operations.s
+   Uses
+      At line 3 in file F3_operations.s
+Comment: F3_add used once
+F3_mult 0000004E
+
+Symbol: F3_mult
+   Definitions
+      At line 48 in file F3_operations.s
+   Uses
+      At line 4 in file F3_operations.s
+Comment: F3_mult used once
+F3_sqr 00000078
+
+Symbol: F3_sqr
+   Definitions
+      At line 72 in file F3_operations.s
+   Uses
+      At line 5 in file F3_operations.s
+Comment: F3_sqr used once
+Program 00000000
+
+Symbol: Program
+   Definitions
+      At line 1 in file F3_operations.s
+   Uses
+      None
+Comment: Program unused
+4 symbols
+338 symbols in table

@@ -1,0 +1,526 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             globalvars, DATA, READWRITE
+    2 00000000 00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 
+              00000000 extra_storage
+                               dcd              0,  0, 0, 0, 0, 0, 0,  0, 0, 0,
+ 0, 0, 0, 0, 0 
+                                                            ; 1 + 6 + 8 words o
+                                                            f storage
+    3 0000003C         
+    4 0000003C                 AREA             Program, CODE, READONLY
+    5 00000000                 ENTRY
+    6 00000000                 EXPORT           F7_add
+    7 00000000                 EXPORT           F7_mult
+    8 00000000                 EXPORT           F7_sqr
+    9 00000000         
+   10 00000000 E92D 5FF0 
+                       F7_add  PUSH             {r4-r12, lr}
+   11 00000004         ; This time, we cannot afford to keep all input in memor
+                       y
+   12 00000004         ; We keep the pointer to a and b in r0 and r1
+   13 00000004         ; We keep a pointer to extra memory in r14
+   14 00000004         ; The pointer to the output array is in the first word o
+                       f the extra memory
+   15 00000004         ; Whenever possible, we use r2 to temporarily load addre
+                       sses in
+   16 00000004         
+   17 00000004 F8DF E3E8       LDR              r14, =extra_storage
+   18 00000008 F8CE 2000       STR              r2, [r14]   ; Store output poin
+                                                            ter in the first wo
+                                                            rd of extra storage
+                                                            
+   19 0000000C         
+   20 0000000C 6803            LDR              r3, [r0]    ; Load a0
+   21 0000000E 680C            LDR              r4, [r1]    ; Load b0
+   22 00000010 684E            LDR              r6, [r1, #4] ; Load b1
+   23 00000012         
+   24 00000012 F8CE 3004       STR              r3, [r14, #4] ; Store a0 to ext
+                                                            ra_storage[1]
+   25 00000016 F8CE 4010       STR              r4, [r14, #16] ; Store b0 to ex
+                                                            tra_storage[4]
+   26 0000001A F8CE 6014       STR              r6, [r14, #20] ; Store b1 to ex
+                                                            tra_storage[5]
+   27 0000001E         
+   28 0000001E EA03 0504       AND              r5, r3, r4  ; 1  
+   29 00000022 F086 37FF       EOR              r7, r6, #0xffffffff ; 2
+   30 00000026 EA43 0804       ORR              r8, r3, r4  ; 3
+   31 0000002A F084 39FF       EOR              r9, r4, #0xffffffff ; 4
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   32 0000002E         
+   33 0000002E 6843            LDR              r3, [r0, #4] ; Load a1
+   34 00000030 F8D0 A008       LDR              r10, [r0, #8] ; Load a2
+   35 00000034 688A            LDR              r2, [r1, #8] ; Load b2
+   36 00000036         
+   37 00000036 F08A 3BFF       EOR              r11, r10, #0xffffffff ; 5
+   38 0000003A         
+   39 0000003A F8CE 701C       STR              r7, [r14, #28] ; Store 2 in sto
+                                                            rage[7]
+   40 0000003E F8CE 3008       STR              r3, [r14, #8] ; Store a1 to ext
+                                                            ra_storage[2]
+   41 00000042 F8CE A00C       STR              r10, [r14, #12] ; Store a2 to e
+                                                            xtra_storage[3]
+   42 00000046 F8CE 2018       STR              r2, [r14, #24] ; Store b2 to ex
+                                                            tra_storage[6]
+   43 0000004A F8CE 9020       STR              r9, [r14, #32] ; Store 4 in sto
+                                                            rage[8]
+   44 0000004E         
+   45 0000004E         ; We no longer need the pointers to a and b: r0 and r1 a
+                       re freed
+   46 0000004E         
+   47 0000004E EA47 070B       ORR              r7, r7, r11 ; 6
+   48 00000052 F083 3CFF       EOR              r12, r3, #0xffffffff ; 7
+   49 00000056 F082 34FF       EOR              r4, r2, #0xffffffff ; 8
+   50 0000005A EA44 000C       ORR              r0, r4, r12 ; 9
+   51 0000005E EA00 0107       AND              r1, r0, r7  ; 10
+   52 00000062 EA44 020B       ORR              r2, r4, r11 ; 11
+   53 00000066 EA01 0102       AND              r1, r1, r2  ; 12
+   54 0000006A EA41 0109       ORR              r1, r1, r9  ; 13
+   55 0000006E F081 31FF       EOR              r1, r1, #0xffffffff ; 13
+   56 00000072         
+   57 00000072 EA43 0906       ORR              r9, r3, r6  ; 14
+   58 00000076         
+   59 00000076 F8CE 9024       STR              r9, [r14, #36] ; Store 14 to ex
+                                                            tra_storage[9]
+   60 0000007A F8CE 4028       STR              r4, [r14, #40] ; Store 8 to ext
+                                                            ra_storage[10]
+   61 0000007E F8CE 702C       STR              r7, [r14, #44] ; Store 6 to ext
+                                                            ra_storage[11]
+   62 00000082 F8CE 2030       STR              r2, [r14, #48] ; Store 11 to ex
+                                                            tra_storage[12]
+   63 00000086 F8CE B034       STR              r11, [r14, #52] ; Store 5 to ex
+                                                            tra_storage[13]
+   64 0000008A         
+   65 0000008A EA49 090A       ORR              r9, r9, r10 ; 15
+   66 0000008E F089 39FF       EOR              r9, r9, #0xffffffff ; 15
+   67 00000092 EA04 0407       AND              r4, r4, r7  ; 16
+   68 00000096 EA44 0409       ORR              r4, r4, r9  ; 17
+   69 0000009A F084 34FF       EOR              r4, r4, #0xffffffff ; 17
+   70 0000009E         
+   71 0000009E F8DE 3010       LDR              r3, [r14, #16] ; Loads b0
+   72 000000A2 F8DE A004       LDR              r10, [r14, #4] ; Loads a0
+   73 000000A6         
+   74 000000A6 EA44 0403       ORR              r4, r4, r3  ; 18
+   75 000000AA F084 34FF       EOR              r4, r4, #0xffffffff ; 18
+   76 000000AE EA41 0104       ORR              r1, r1, r4  ; 19
+   77 000000B2 EA01 010A       AND              r1, r1, r10 ; 20
+   78 000000B6 EA4C 0C03       ORR              r12, r12, r3 ; 21
+   79 000000BA EA4C 0C07       ORR              r12, r12, r7 ; 22
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+   80 000000BE F08C 3CFF       EOR              r12, r12, #0xffffffff ; 22
+   81 000000C2 EA4C 0C01       ORR              r12, r12, r1 ; 23
+   82 000000C6         
+   83 000000C6 F8DE 701C       LDR              r7, [r14, #28] ; Loads 2
+   84 000000CA F8DE A024       LDR              r10, [r14, #36] ; Loads 14
+   85 000000CE F8DE 2010       LDR              r2, [r14, #16] ; Loads b0
+   86 000000D2 F8DE 6018       LDR              r6, [r14, #24] ; Loads b2
+   87 000000D6 F8DE 3030       LDR              r3, [r14, #48] ; Loads 11
+   88 000000DA         
+   89 000000DA EA43 0302       ORR              r3, r3, r2  ; 24
+   90 000000DE F083 33FF       EOR              r3, r3, #0xffffffff ; 24
+   91 000000E2 EA4A 0A06       ORR              r10, r10, r6 ; 25
+   92 000000E6 F08A 3AFF       EOR              r10, r10, #0xffffffff ; 25
+   93 000000EA EA0B 0B00       AND              r11, r11, r0 ; 26
+   94 000000EE EA4B 0B0A       ORR              r11, r11, r10 ; 27
+   95 000000F2 EA0B 0B02       AND              r11, r11, r2 ; 28
+   96 000000F6 EA43 030B       ORR              r3, r3, r11 ; 29
+   97 000000FA F083 33FF       EOR              r3, r3, #0xffffffff ; 29
+   98 000000FE         
+   99 000000FE F8DE 6004       LDR              r6, [r14, #4] ; Loads a0
+  100 00000102         
+  101 00000102 EA40 0007       ORR              r0, r0, r7  ; 30
+  102 00000106 EA00 0003       AND              r0, r0, r3  ; 31
+  103 0000010A EA40 0006       ORR              r0, r0, r6  ; 32
+  104 0000010E F080 30FF       EOR              r0, r0, #0xffffffff ; 32
+  105 00000112 EA40 000C       ORR              r0, r0, r12 ; 33 - c0
+  106 00000116         
+  107 00000116 F8DE 3000       LDR              r3, [r14]   ; Load address to o
+                                                            utput
+  108 0000011A F8DE B00C       LDR              r11, [r14, #12] ; Loads a2
+  109 0000011E 6018            STR              r0, [r3]    ; Store c0 in outpu
+                                                            t
+  110 00000120         
+  111 00000120 F080 30FF       EOR              r0, r0, #0xffffffff ; 34
+  112 00000124 EA40 040B       ORR              r4, r0, r11 ; 35
+  113 00000128 EA04 0C08       AND              r12, r4, r8 ; 36
+  114 0000012C EA4C 0C07       ORR              r12, r12, r7 ; 37
+  115 00000130 F08C 3CFF       EOR              r12, r12, #0xffffffff ; 37
+  116 00000134 F086 36FF       EOR              r6, r6, #0xffffffff ; 38
+  117 00000138         
+  118 00000138 F8DE 9014       LDR              r9, [r14, #20] ; Loads b1
+  119 0000013C F8DE 3020       LDR              r3, [r14, #32] ; Loads 4
+  120 00000140         
+  121 00000140 EA49 0906       ORR              r9, r9, r6  ; 39
+  122 00000144 F089 39FF       EOR              r9, r9, #0xffffffff ; 39
+  123 00000148 EA09 0900       AND              r9, r9, r0  ; 40
+  124 0000014C EA49 090C       ORR              r9, r9, r12 ; 41
+  125 00000150 F089 39FF       EOR              r9, r9, #0xffffffff ; 41
+  126 00000154         
+  127 00000154 F8DE C030       LDR              r12, [r14, #48] ; Loads 11
+  128 00000158         
+  129 00000158 EA43 030C       ORR              r3, r3, r12 ; 42
+  130 0000015C EA03 0309       AND              r3, r3, r9  ; 43
+  131 00000160         
+  132 00000160 F8DE 1010       LDR              r1, [r14, #16] ; Loads b0
+  133 00000164 F8DE C008       LDR              r12, [r14, #8] ; Loads a1
+  134 00000168 F8DE B014       LDR              r11, [r14, #20] ; Loads b1
+  135 0000016C F8DE 9018       LDR              r9, [r14, #24] ; Loads b2
+  136 00000170         
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  137 00000170 EA43 030C       ORR              r3, r3, r12 ; 44
+  138 00000174 F083 33FF       EOR              r3, r3, #0xffffffff ; 44
+  139 00000178 EA40 0009       ORR              r0, r0, r9  ; 45
+  140 0000017C EA00 0008       AND              r0, r0, r8  ; 46
+  141 00000180 EA40 000B       ORR              r0, r0, r11 ; 47
+  142 00000184 F080 30FF       EOR              r0, r0, #0xffffffff ; 47
+  143 00000188 EA01 010B       AND              r1, r1, r11 ; 48
+  144 0000018C EA04 0401       AND              r4, r4, r1  ; 49
+  145 00000190 EA44 0400       ORR              r4, r4, r0  ; 50
+  146 00000194         
+  147 00000194 F8DE 0028       LDR              r0, [r14, #40] ; Loads 8
+  148 00000198 F8DE 8030       LDR              r8, [r14, #48] ; Loads 11
+  149 0000019C         
+  150 0000019C EA47 0700       ORR              r7, r7, r0  ; 51
+  151 000001A0 EA07 0708       AND              r7, r7, r8  ; 52
+  152 000001A4 EA47 0706       ORR              r7, r7, r6  ; 53
+  153 000001A8 F087 37FF       EOR              r7, r7, #0xffffffff ; 53
+  154 000001AC EA44 0407       ORR              r4, r4, r7  ; 54
+  155 000001B0 EA04 040C       AND              r4, r4, r12 ; 55
+  156 000001B4 EA44 0403       ORR              r4, r4, r3  ; 56
+  157 000001B8         
+  158 000001B8 F8DE 7000       LDR              r7, [r14]   ; Load address to o
+                                                            utput
+  159 000001BC 607C            STR              r4, [r7, #4] ; Store c1 in outp
+                                                            ut
+  160 000001BE         
+  161 000001BE F084 34FF       EOR              r4, r4, #0xffffffff ; 57
+  162 000001C2         
+  163 000001C2 F8DE B034       LDR              r11, [r14, #52] ; Loads 5
+  164 000001C6         
+  165 000001C6 EA0B 0704       AND              r7, r11, r4 ; 58 
+  166 000001CA EA47 0705       ORR              r7, r7, r5  ; 59
+  167 000001CE EA07 070C       AND              r7, r7, r12 ; 60
+  168 000001D2 EA44 0C02       ORR              r12, r4, r2 ; 61
+  169 000001D6         
+  170 000001D6 F8DE 5024       LDR              r5, [r14, #36] ; Loads 14
+  171 000001DA         
+  172 000001DA EA0C 0205       AND              r2, r12, r5 ; 62
+  173 000001DE EA42 020B       ORR              r2, r2, r11 ; 63
+  174 000001E2 F082 32FF       EOR              r2, r2, #0xffffffff ; 63
+  175 000001E6 EA47 0702       ORR              r7, r7, r2  ; 64
+  176 000001EA F087 37FF       EOR              r7, r7, #0xffffffff ; 64
+  177 000001EE EA47 0709       ORR              r7, r7, r9  ; 65
+  178 000001F2 F087 37FF       EOR              r7, r7, #0xffffffff ; 65
+  179 000001F6         ; We need a0 = ~38
+  180 000001F6 F086 30FF       EOR              r0, r6, #0xffffffff ; Compute a
+                                                            0 from 38
+  181 000001FA EA00 020B       AND              r2, r0, r11 ; 66
+  182 000001FE EA02 0201       AND              r2, r2, r1  ; 67
+  183 00000202 EA42 0207       ORR              r2, r2, r7  ; 68
+  184 00000206 EA40 0004       ORR              r0, r0, r4  ; 69
+  185 0000020A EA00 0005       AND              r0, r0, r5  ; 70
+  186 0000020E         
+  187 0000020E F8DE B008       LDR              r11, [r14, #8] ; Loads a1
+  188 00000212 F8DE 800C       LDR              r8, [r14, #12] ; Loads a2
+  189 00000216 F8DE 502C       LDR              r5, [r14, #44] ; Loads 6
+  190 0000021A         
+  191 0000021A EA40 0008       ORR              r0, r0, r8  ; 71
+  192 0000021E F080 30FF       EOR              r0, r0, #0xffffffff ; 71
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+  193 00000222 EA08 080B       AND              r8, r8, r11 ; 72
+  194 00000226 EA08 080C       AND              r8, r8, r12 ; 73
+  195 0000022A EA40 0008       ORR              r0, r0, r8  ; 74
+  196 0000022E EA46 0605       ORR              r6, r6, r5  ; 75
+  197 00000232 F086 36FF       EOR              r6, r6, #0xffffffff ; 75
+  198 00000236 EA46 0600       ORR              r6, r6, r0  ; 76
+  199 0000023A EA06 0609       AND              r6, r6, r9  ; 77
+  200 0000023E EA46 0602       ORR              r6, r6, r2  ; 78
+  201 00000242         
+  202 00000242 F8DE 7000       LDR              r7, [r14]   ; Load address to o
+                                                            utput
+  203 00000246 60BE            STR              r6, [r7, #8] ; Store c2 in outp
+                                                            ut
+  204 00000248         
+  205 00000248 E8BD 5FF0       POP              {r4-r12, lr}
+  206 0000024C 4770            bx               lr
+  207 0000024E         
+  208 0000024E E92D 5FF0 
+                       F7_mult PUSH             {r4-r12, lr}
+  209 00000252 6803            LDR              r3, [r0]    ; Loads a0 into r3
+  210 00000254 6844            LDR              r4, [r0, #4] ; Loads a1 into r4
+                                                            
+  211 00000256 6885            LDR              r5, [r0, #8] ; Loads a2 into r5
+                                                            
+  212 00000258 680E            LDR              r6, [r1]    ; Loads b0 into r6
+  213 0000025A 684F            LDR              r7, [r1, #4] ; Loads b1 into r7
+                                                            
+  214 0000025C F8D1 8008       LDR              r8, [r1, #8] ; Loads b2 into r8
+                                                            
+  215 00000260         
+  216 00000260 EA03 0908       AND              r9, r3, r8  ; 1
+  217 00000264 EA45 0A06       ORR              r10, r5, r6 ; 2
+  218 00000268 F08A 3AFF       EOR              r10, r10, #0xffffffff ; 2
+  219 0000026C EA44 0B07       ORR              r11, r4, r7 ; 3
+  220 00000270 F08B 3BFF       EOR              r11, r11, #0xffffffff ; 3
+  221 00000274 EA4A 0A0B       ORR              r10, r10, r11 ; 4 - r11 freed
+  222 00000278 EA09 090A       AND              r9, r9, r10 ; 5 - r10 freed
+  223 0000027C EA43 0A08       ORR              r10, r3, r8 ; 6
+  224 00000280 F08A 3AFF       EOR              r10, r10, #0xffffffff ; 6
+  225 00000284 EA05 0B06       AND              r11, r5, r6 ; 7
+  226 00000288 EA04 0C07       AND              r12, r4, r7 ; 8
+  227 0000028C EA4B 0B0C       ORR              r11, r11, r12 ; 9 - r12 freed
+  228 00000290 EA0A 0A0B       AND              r10, r10, r11 ; 10 - r11 freed
+  229 00000294 EA49 090A       ORR              r9, r9, r10 ; 11 - r10 freed
+  230 00000298 F084 3AFF       EOR              r10, r4, #0xffffffff ; 12
+  231 0000029C EA0A 0A05       AND              r10, r10, r5 ; 13
+  232 000002A0 F84D AD04       PUSH             {r10}       ; Store 13 on stack
+                                                            
+  233 000002A4 F087 3BFF       EOR              r11, r7, #0xffffffff ; 14
+  234 000002A8 EA0B 0B06       AND              r11, r11, r6 ; 15 - We also nee
+                                                            d 14 for 55, but we
+                                                             will just recomput
+                                                            e it later
+  235 000002AC EA0A 0A0B       AND              r10, r10, r11 ; 16 - r11 freed
+  236 000002B0 F085 3BFF       EOR              r11, r5, #0xffffffff ; 17
+  237 000002B4 EA0B 0B04       AND              r11, r11, r4 ; 18
+  238 000002B8 F086 3CFF       EOR              r12, r6, #0xffffffff ; 19
+  239 000002BC EA0C 0E07       AND              r14, r12, r7 ; 20
+  240 000002C0 EA0E 0E0B       AND              r14, r14, r11 ; 21
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+  241 000002C4 EA4E 0E0A       ORR              r14, r14, r10 ; 22 - r10 freed
+  242 000002C8 EA4E 0E09       ORR              r14, r14, r9 ; 23 - r9 freed
+  243 000002CC         
+  244 000002CC F8C2 E008       STR              r14, [r2, #8] ; Stores c2 - r14
+                                                             freed
+  245 000002D0         ; r12 is still taken
+  246 000002D0         
+  247 000002D0 F088 39FF       EOR              r9, r8, #0xffffffff ; 24
+  248 000002D4 EA09 0906       AND              r9, r9, r6  ; 25 - We also need
+                                                             24 for 53, but we 
+                                                            will just recompute
+                                                             it later
+  249 000002D8 EA09 090B       AND              r9, r9, r11 ; 26 - We also need
+                                                             18 for 56, but we 
+                                                            will just recompute
+                                                             it later - r11 fre
+                                                            ed
+  250 000002DC EA0C 0C08       AND              r12, r12, r8 ; 27
+  251 000002E0 F8DD A000       LDR              r10, [sp]   ; Restore 13 from s
+                                                            tack, but keep it t
+                                                            here as well
+  252 000002E4 EA0C 0C0A       AND              r12, r12, r10 ; 28 - r10 freed
+  253 000002E8 EA4C 0C09       ORR              r12, r12, r9 ; 29
+  254 000002EC EA03 0A07       AND              r10, r3, r7 ; 30
+  255 000002F0 EA46 0B08       ORR              r11, r6, r8 ; 31
+  256 000002F4 F08B 3BFF       EOR              r11, r11, #0xffffffff ; 31
+  257 000002F8 EA44 0E05       ORR              r14, r4, r5 ; 32
+  258 000002FC F08E 3EFF       EOR              r14, r14, #0xffffffff ; 32
+  259 00000300 EA4B 0B0E       ORR              r11, r11, r14 ; 33 - r14 freed
+  260 00000304 EA0A 0A0B       AND              r10, r10, r11 ; 34 - r11 freed
+  261 00000308 EA43 0B07       ORR              r11, r3, r7 ; 35
+  262 0000030C F08B 3BFF       EOR              r11, r11, #0xffffffff ; 35
+  263 00000310 EA05 0E08       AND              r14, r5, r8 ; 36
+  264 00000314 EA04 0906       AND              r9, r4, r6  ; 37
+  265 00000318 EA49 090E       ORR              r9, r9, r14 ; 38 - r14 freed
+  266 0000031C EA09 090B       AND              r9, r9, r11 ; 39 - r11 freed
+  267 00000320 EA49 090A       ORR              r9, r9, r10 ; 40 - r10 freed
+  268 00000324 EA4C 0C09       ORR              r12, r12, r9 ; 41 - r9 freed
+  269 00000328         
+  270 00000328 F8C2 C004       STR              r12, [r2, #4] ; Stores c1 - r10
+                                                             freed
+  271 0000032C         
+  272 0000032C EA03 0906       AND              r9, r3, r6  ; 42
+  273 00000330 EA45 0A07       ORR              r10, r5, r7 ; 43
+  274 00000334 F08A 3AFF       EOR              r10, r10, #0xffffffff ; 43
+  275 00000338 EA44 0B08       ORR              r11, r4, r8 ; 44
+  276 0000033C F08B 3BFF       EOR              r11, r11, #0xffffffff ; 44
+  277 00000340 EA4A 0A0B       ORR              r10, r10, r11 ; 45 - r11 freed
+  278 00000344 EA09 090A       AND              r9, r9, r10 ; 46 - r10 freed
+  279 00000348 EA43 0A06       ORR              r10, r3, r6 ; 47
+  280 0000034C F08A 3AFF       EOR              r10, r10, #0xffffffff ; 47
+  281 00000350 EA07 0B05       AND              r11, r7, r5 ; 48
+  282 00000354 EA04 0C08       AND              r12, r4, r8 ; 49
+  283 00000358 EA4B 0B0C       ORR              r11, r11, r12 ; 50 - r12 freed
+  284 0000035C EA0A 0A0B       AND              r10, r10, r11 ; 51 - r11 freed
+  285 00000360 EA49 090A       ORR              r9, r9, r10 ; 52 - r10 freed
+  286 00000364 F088 3AFF       EOR              r10, r8, #0xffffffff 
+                                                            ; Recompute 24
+  287 00000368 EA0A 0A07       AND              r10, r10, r7 ; 53
+
+
+
+ARM Macro Assembler    Page 7 
+
+
+  288 0000036C F85D BB04       POP              {r11}       ; Restore 13 from t
+                                                            he stack
+  289 00000370 EA0A 0A0B       AND              r10, r10, r11 ; 54 - r11 freed
+  290 00000374 F087 3BFF       EOR              r11, r7, #0xffffffff 
+                                                            ; Recompute 14
+  291 00000378 EA0B 0B08       AND              r11, r11, r8 ; 55
+  292 0000037C F085 3CFF       EOR              r12, r5, #0xffffffff 
+                                                            ; Recompute 17
+  293 00000380 EA0C 0C04       AND              r12, r12, r4 ; Recompute 18
+  294 00000384 EA0B 0B0C       AND              r11, r11, r12 ; 56 - r12 freed
+  295 00000388 EA4A 0A0B       ORR              r10, r10, r11 ; 57 - r11 freed
+  296 0000038C EA49 090A       ORR              r9, r9, r10 ; 58 - c0
+  297 00000390         
+  298 00000390 F8C2 9000       STR              r9, [r2]    ; Stores c0
+  299 00000394         
+  300 00000394 E8BD 5FF0       POP              {r4-r12, lr}
+  301 00000398 4770            bx               lr
+  302 0000039A         
+  303 0000039A B4F0    F7_sqr  PUSH             {r4-r7}
+  304 0000039C 6802            LDR              r2, [r0]    ; Loads a0 into r2
+  305 0000039E 6843            LDR              r3, [r0, #4] ; Loads a1 into r3
+                                                            
+  306 000003A0 6884            LDR              r4, [r0, #8] ; Loads a2 into r4
+                                                            
+  307 000003A2         
+  308 000003A2 EA02 0004       AND              r0, r2, r4  ; 1
+  309 000003A6 F083 35FF       EOR              r5, r3, #0xffffffff ; 2
+  310 000003AA EA45 0504       ORR              r5, r5, r4  ; 3
+  311 000003AE EA45 0502       ORR              r5, r5, r2  ; 4
+  312 000003B2 F085 35FF       EOR              r5, r5, #0xffffffff ; 4
+  313 000003B6 EA45 0500       ORR              r5, r5, r0  ; 5 - c2  
+  314 000003BA EA02 0603       AND              r6, r2, r3  ; 6
+  315 000003BE F084 37FF       EOR              r7, r4, #0xffffffff ; 7
+  316 000003C2 EA47 0703       ORR              r7, r7, r3  ; 8
+  317 000003C6 EA47 0702       ORR              r7, r7, r2  ; 9
+  318 000003CA F087 37FF       EOR              r7, r7, #0xffffffff ; 9
+  319 000003CE EA46 0607       ORR              r6, r6, r7  ; 10 - c1 - r7 free
+                                                            d
+  320 000003D2 EA03 0704       AND              r7, r3, r4  ; 11
+  321 000003D6 EA43 0304       ORR              r3, r3, r4  ; 12 - r4 freed
+  322 000003DA F083 33FF       EOR              r3, r3, #0xffffffff ; 12
+  323 000003DE EA03 0302       AND              r3, r3, r2  ; 13
+  324 000003E2 EA47 0703       ORR              r7, r7, r3  ; 14 - c0
+  325 000003E6         
+  326 000003E6 600F            STR              r7, [r1]    ; Store c0
+  327 000003E8 604E            STR              r6, [r1, #4] ; Store c1
+  328 000003EA 608D            STR              r5, [r1, #8] ; Store c2
+  329 000003EC         
+  330 000003EC BCF0            POP              {r4-r7}
+  331 000003EE         
+  332 000003EE 4770            bx               lr
+  333 000003F0         
+  334 000003F0                 END
+              00000000 
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4 --apcs=interw
+ork --depend=.\objects\f7_operations.d -o.\objects\f7_operations.o -I.\RTE\_Tar
+get_1 -I"D:\Program Files (x86)\Keil\ARM\PACK\ARM\CMSIS\5.3.0\CMSIS\Include" -I
+"D:\Program Files (x86)\Keil\ARM\PACK\ARM\CMSIS\5.3.0\Device\ARM\ARMCM4\Include
+" --predefine="__EVAL SETA 1" --predefine="__UVISION_VERSION SETA 525" --predef
+
+
+
+ARM Macro Assembler    Page 8 
+
+
+ine="_RTE_ SETA 1" --predefine="ARMCM4 SETA 1" --list=.\listings\f7_operations.
+lst F7_operations.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+extra_storage 00000000
+
+Symbol: extra_storage
+   Definitions
+      At line 2 in file F7_operations.s
+   Uses
+      At line 17 in file F7_operations.s
+Comment: extra_storage used once
+globalvars 00000000
+
+Symbol: globalvars
+   Definitions
+      At line 1 in file F7_operations.s
+   Uses
+      None
+Comment: globalvars unused
+2 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+F7_add 00000000
+
+Symbol: F7_add
+   Definitions
+      At line 10 in file F7_operations.s
+   Uses
+      At line 6 in file F7_operations.s
+Comment: F7_add used once
+F7_mult 0000024E
+
+Symbol: F7_mult
+   Definitions
+      At line 208 in file F7_operations.s
+   Uses
+      At line 7 in file F7_operations.s
+Comment: F7_mult used once
+F7_sqr 0000039A
+
+Symbol: F7_sqr
+   Definitions
+      At line 303 in file F7_operations.s
+   Uses
+      At line 8 in file F7_operations.s
+Comment: F7_sqr used once
+Program 00000000
+
+Symbol: Program
+   Definitions
+      At line 4 in file F7_operations.s
+   Uses
+      None
+Comment: Program unused
+4 symbols
+342 symbols in table
