@@ -88,7 +88,7 @@ We instead chose to cover a wider range of topics, each for a couple of weeks, w
 
 In Chapter 1, we work on implementing various field operations over $\GF(p)$ efficiently in ARM. In Chapter 2, we modify and implement the Walsh-Hadamard transformation Tto work in $\GF(p)$. In Chapter 3, we define the transformation \ThreeCircle and a scheme for computing MAC that works over $\GF(p)$. We then proceed to attack the scheme using differential cryptanalysis. Finally, in Chapter 4, we use the attack described in Chapter 3 to launch another attack that recovers the secret key used in the MAC scheme.
 
-Relevant files are made available at [INSERT URL].
+Relevant files are made available at:\\\url{https://github.com/TimVanDijk/Research-Internship-Public}.
 
 \addcontentsline{toc}{chapter}{Preface}
 
@@ -102,6 +102,7 @@ Bitslicing refers to a software technique where a computation is expressed as a 
 These computations are carried out in parallel, with as many simultaneous instances as there are bits in a register, performing the elementary operations on all bits of the register. The amount of parallelism is only bound by the target architecture's register width.
 
 This technique can, for example, be used to efficiently implement certain ciphers. A requirement is that there is a high degree of parallelism on the operations that are performed on the state.
+\newpage
 
 In this document, we will show how bitslicing can be applied to emulate basic field operations, namely addition, multiplication and squaring, efficiently in $\GF(3)$, $\GF(5)$ and $\GF(7)$ using a regular binary computer.
 
@@ -124,7 +125,8 @@ There is a multitude of reasons as to why bitslicing can be advantageous.\cite{t
 
 In bitslicing, these operations can be performed much more efficiently as bits are readiliy available. Moreover, permutating bits does not require any operations at all, performing the permutation only mentally, given that it is kept in mind what represents what during subsequent computations.
 
-Furthermore, as the code is extremely linear, it runs well on modern heavily pipelined CPUs as there is a low risk of branch misprediction, and there are plenty of opportunities for instruction reordering for efficient scheduling of data accesses.\\
+Furthermore, as the code is extremely linear, it runs well on modern heavily pipelined CPUs as there is a low risk of branch misprediction, and there are plenty of opportunities for instruction reordering for efficient scheduling of data accesses.
+\newpage
 \noindent\textbf{Parallelization.} When the architecture has registers of width $w$ and the bitsliced operations take no longer than $w$ times as long, throughput increases. Of course, this is only applicable for workloads that allow for parallelization.\\
 \noindent\textbf{Constant time.} Bitslicing is inherently protected against timing attacks.\\
 
@@ -172,6 +174,7 @@ Once implemented the function will be called from a C wrapper as follows:
 \begin{verbatim}
 func(inputA, inputB, output);
 \end{verbatim}
+\newpage
 As specified by the calling convention, the result will be that r0 contains a pointer to inputA, r1 contains one to inputB and r2 contains one to the output array.
 At the very beginning of the function, we preverve the value registers whose value must be retained (as specified by the calling convention). We do so by pushing them to the stack:
 \begin{verbatim}
@@ -253,8 +256,8 @@ This chapter is about how we implemented the equivalent of the Walsh-Hadamard tr
 Linear cryptanalysis exploits large correlations over all but a few rounds of a block cipher. The Walsh-Hadamard transform can be used to compute the correlation of a function with all linear functions, making it a very valuable tool.
 
 We implemented the multidimensional discrete Fourier transform (MDFT) that this the equivalent for $\GF(p)$ of what the fast Walsh-Hadamard transform is for $\GF(2)$. While correlations in mappings over $\GF(2)$ are rational numbers, the correlations for mappings over $\GF(p)$ are complex numbers, with the real and imaginary part often non-rational. Indeed, correlations for such mappings have a magnitude and a phase. The complex nature of these correlations makes their interpretations non-trivial and a considerable part of our effort went into expressing correlations in such a way that they are easier to interpret.
-
-We did the following implementations:
+\newpage
+\noindent We did the following implementations:
 \begin{enumerate}
 \item MDFT for functions from ${\GF(p)}^n$ to ${\GF(p)}$, where correlations are coded as a couple of floating point numbers representing the real and imaginary part.
 \item MDFT for functions from ${\GF(p)}^n$ to ${\GF(p)}$, where correlations are coded in full precision, with tuples of integers, and accompanying interpretation functions.
@@ -338,7 +341,6 @@ Currently, when a Complex Polynomial is displayed using the euler function, the 
 \chapter{Finding MAC collisions using differential cryptanalysis}
 In this chapter, we describe how we apply differential cryptanalysis to find collisions in a MAC scheme that is based on (round-reduced) transformations. The transformation we use is the cryptographic transformation \ThreeCircle that operates over $\GF(3)$.
 
-% JDA: volgende hier gecopy-paste
 \section{Specification of \ThreeCircle}
 \ThreeCircle is an experimental transformation for gaining insight in propagation.
 It has a classical iterated structure: it iterates a round function a number of times to the state. This round function is designed according to the wide trail strategy: it contains a non-linear step, a mixing step, two transposition steps and the addition of a (round-index-dependent) round constant. 
@@ -398,7 +400,7 @@ The first part of the message is added to the key and is then put through $n$-ro
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[scale=0.125]{imgs/HMAC_HighResV2.png}
+\includegraphics[scale=0.120]{imgs/HMAC_HighResV2.png}
 \caption{Scheme for generating MACs using a (round-reduced) transformation.}
 \label{fig:mac}
 \end{figure}
@@ -407,7 +409,7 @@ In the MAC generation scheme, we use 3-round \ThreeCircle as the round-reduced t
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[scale=0.125]{imgs/HMAC_HighRes_ThreeCircle.png}
+\includegraphics[scale=0.120]{imgs/HMAC_HighRes_ThreeCircle.png}
 \caption{Scheme for generating MACs using (round-reduced) \ThreeCircle.}
 \label{fig:mac3c}
 \end{figure}
@@ -498,7 +500,7 @@ sage: print(inv)
 [2 0 0 1 2 1 1 1 2 1 2 2 0 2 0 2 0 0 1 1 0 0 0 0 1 1 1 1 2 0 1 1]
 [1 2 0 0 1 2 1 1 1 2 1 2 2 0 2 0 2 0 0 1 1 0 0 0 0 1 1 1 1 2 0 1]
 \end{verbatim}
-
+\newpage
 Unfortunately, there is no ``clever'' approach to generating an inverse for $\theta$. We decided to go with the general approach.
 Since $\theta$ is linear, we can find the inverse by applying it to each row of a 160x160 identity matrix and then computing the inverse of the result.
 Again, we used sage to do this:
